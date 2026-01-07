@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+.env
+.vscode/
+.idea/
+*.log
+loan_status_predictor.pkl
+vector.pkl
