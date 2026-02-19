@@ -1,152 +1,226 @@
-const { useState, useEffect } = React;
+const { useState } = React;
+const { createRoot } = ReactDOM;
 
-// --- Components ---
+// --- Helper Components ---
 
-const InputGroup = ({ label, value, onChange, type = "text", options = null, prefix = "", suffix = "" }) => (
-    <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.4rem' }}>{label}</label>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            {prefix && <span style={{ position: 'absolute', left: '10px', color: '#64748b' }}>{prefix}</span>}
-
-            {options ? (
-                <select
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="glass-input"
-                    style={{ paddingLeft: prefix ? '25px' : '10px', width: '100%' }}
-                >
-                    {options.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
-            ) : (
-                <input
-                    type={type}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="glass-input"
-                    style={{ paddingLeft: prefix ? '25px' : '10px', paddingRight: suffix ? '25px' : '10px', width: '100%' }}
-                />
-            )}
-
-            {suffix && <span style={{ position: 'absolute', right: '10px', color: '#64748b' }}>{suffix}</span>}
-        </div>
+const InputGroup = ({ label, value, onChange, type = "text", options = null }) => (
+    <div style={{ marginBottom: '1.2rem' }}>
+        <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--secondary)', marginBottom: '0.5rem' }}>
+            {label}
+        </label>
+        {options ? (
+            <select 
+                value={value} 
+                onChange={(e) => onChange(e.target.value)}
+                className="glass-input"
+            >
+                {options.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+            </select>
+        ) : (
+            <input
+                type={type}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="glass-input"
+            />
+        )}
     </div>
 );
 
-const ResultCard = ({ result, onReset }) => {
-    if (!result) return null;
+const ActionPlan = ({ plans }) => {
+    if (!plans || plans.length === 0) return null;
 
-    const isApproved = result.loan_status === "Approved";
-    const statusColor = isApproved ? '#10b981' : '#ef4444'; // Green : Red
+    return (
+        <div style={{ 
+            background: 'rgba(16, 185, 129, 0.1)', // Subtle green background
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            padding: '1.5rem', 
+            borderRadius: '16px', 
+            marginTop: '2rem',
+            textAlign: 'left'
+        }}>
+            <h3 style={{ color: '#86efac', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="ri-route-line"></i> Path to Approval
+            </h3>
+            <p style={{ color: 'var(--secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                Our AI found {plans.length} alternative scenarios where your loan would be approved:
+            </p>
 
-    // Helper to render an explanation section
-    const ExplanationSection = ({ title, items, icon }) => (
-        <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <i className={icon}></i> {title}
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {items.map((item, i) => {
-                    // Normalize data structure between SHAP (feature/impact_score) and LIME (rule/weight)
-                    const label = item.feature || item.rule;
-                    const score = item.impact_score || item.weight;
-                    const impactDir = item.impact_direction || item.impact; // Positive/Negative
-
-                    return (
-                        <div key={i} style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            background: 'rgba(255,255,255,0.03)',
-                            padding: '0.6rem',
-                            borderRadius: '6px'
-                        }}>
-                            <span style={{ fontSize: '0.85rem', color: '#e2e8f0' }}>{label}</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{
-                                    fontSize: '0.75rem',
-                                    color: impactDir === 'Positive' ? '#10b981' : '#ef4444',
-                                    background: impactDir === 'Positive' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                    padding: '2px 6px', borderRadius: '4px',
-                                    fontWeight: '500'
-                                }}>
-                                    {impactDir}
-                                </span>
-                                <span style={{ fontSize: '0.75rem', color: '#64748b', minWidth: '40px', textAlign: 'right' }}>
-                                    {score}
-                                </span>
-                            </div>
-                        </div>
-                    );
-                })}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {plans.map((planGroup, index) => (
+                    <div key={index} style={{ 
+                        background: 'rgba(0,0,0,0.3)', 
+                        padding: '1rem', 
+                        borderRadius: '8px' 
+                    }}>
+                        <strong style={{ color: '#fff', fontSize: '0.85rem', textTransform: 'uppercase' }}>Option {index + 1}:</strong>
+                        <ul style={{ color: '#e2e8f0', marginTop: '0.5rem', paddingLeft: '1.5rem', fontSize: '0.95rem' }}>
+                            {planGroup.map((step, i) => (
+                                <li key={i} style={{ marginBottom: '0.3rem' }}>{step}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
             </div>
         </div>
     );
+};
+
+const ResultCard = ({ result, onReset }) => {
+    const isApproved = result.loan_status === "Approved";
+    const statusColor = isApproved ? 'var(--success)' : 'var(--danger)'; 
 
     return (
-        <div className="glass-card fade-in" style={{ textAlign: 'center', padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-            {/* --- Status Header --- */}
-            <div style={{
-                width: '80px', height: '80px', borderRadius: '50%',
-                background: isApproved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                color: statusColor,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 1.5rem auto',
-                fontSize: '2.5rem'
-            }}>
-                <i className={isApproved ? "ri-check-line" : "ri-close-line"}></i>
+        <div className="glass-card fade-in" style={{ 
+            width: '100%', 
+            maxWidth: '1000px', 
+            margin: '0 auto',
+            maxHeight: '85vh',       /* Restricts height to 85% of the viewport */
+            overflowY: 'auto',       /* Adds a vertical scrollbar when content overflows */
+            paddingRight: '1rem'     /* Adds a little padding so the scrollbar doesn't hug the text */
+        }}>
+            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                <div style={{
+                    width: '80px', height: '80px', borderRadius: '50%',
+                    background: isApproved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                    color: statusColor,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 1.5rem auto',
+                    fontSize: '2.5rem'
+                }}>
+                    <i className={isApproved ? "ri-check-line" : "ri-close-line"}></i>
+                </div>
+                <h2 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '0.5rem', color: '#fff' }}>
+                    {result.loan_status}
+                </h2>
+                <div style={{ color: 'var(--secondary)' }}>
+                    Probability of Default: <span style={{ color: '#fff', fontWeight: '500' }}>{result.probability_of_default}</span>
+                </div>
+                <div style={{ marginTop: '1rem' }}>
+                     <span style={{ 
+                         padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600',
+                         background: result.risk_category === "High Risk" ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                         color: result.risk_category === "High Risk" ? '#fca5a5' : '#86efac'
+                     }}>
+                        {result.risk_category}
+                    </span>
+                </div>
             </div>
 
-            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#fff', marginBottom: '0.5rem' }}>
-                {result.loan_status}
-            </h2>
-            <div style={{ color: '#94a3b8', marginBottom: '2rem' }}>
-                Confidence Score: <span style={{ color: '#fff', fontWeight: '600' }}>{result.confidence_score}</span>
-            </div>
-
-            {/* --- Explanations Container --- */}
-            <div style={{ textAlign: 'left', background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1rem', color: '#fff', marginBottom: '1.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <i className="ri-brain-line"></i> AI Reasoning
+            <div style={{ background: 'rgba(0,0,0,0.3)', padding: '2rem', borderRadius: '16px', marginBottom: '2rem' }}>
+                <h3 style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem', marginBottom: '1.5rem', color: '#fff' }}>
+                    <i className="ri-brain-line"></i> AI Analysis
                 </h3>
-                
-                {/* 1. SHAP Section */}
-                <ExplanationSection 
-                    title="Key Drivers (Global Trend)" 
-                    items={result.explanations.shap_top_factors} 
-                    icon="ri-bar-chart-horizontal-line" 
-                />
 
-                {/* 2. LIME Section */}
-                <ExplanationSection 
-                    title="Specific Rules (This Case)" 
-                    items={result.explanations.lime_rules} 
-                    icon="ri-list-check-2" 
-                />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
+                    {/* SHAP Factors */}
+                    <div>
+                        <h4 style={{ color: 'var(--secondary)', marginBottom: '1rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <i className="ri-bar-chart-horizontal-line"></i> Key Drivers (SHAP)
+                        </h4>
+                        {result.explanations?.shap_top_factors?.map((item, i) => (
+                            <div key={i} style={{ 
+                                display: 'flex', justifyContent: 'space-between', 
+                                background: 'rgba(255,255,255,0.03)', padding: '0.75rem', 
+                                borderRadius: '8px', marginBottom: '0.5rem' 
+                            }}>
+                                <span style={{ fontSize: '0.9rem' }}>{item.feature}</span>
+                                <span style={{ 
+                                    color: item.impact_direction.includes("Increases") ? 'var(--danger)' : 'var(--success)',
+                                    fontWeight: '600', fontSize: '0.9rem'
+                                }}>
+                                    {item.impact_score}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* LIME Rules */}
+                    <div>
+                        <h4 style={{ color: 'var(--secondary)', marginBottom: '1rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <i className="ri-list-check-2"></i> Specific Rules (LIME)
+                        </h4>
+                        {Array.isArray(result.explanations?.lime_rules) ? (
+                            result.explanations.lime_rules.map((item, i) => (
+                                <div key={i} style={{ 
+                                    marginBottom: '0.5rem', fontSize: '0.9rem', 
+                                    background: 'rgba(255,255,255,0.03)', padding: '0.75rem', 
+                                    borderRadius: '8px',
+                                    wordBreak: 'break-word'
+                                }}>
+                                    {item.rule}
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{ color: 'var(--secondary)', fontStyle: 'italic', padding: '0.75rem' }}>
+                                {result.explanations?.lime_rules}
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            <button className="primary-btn" onClick={onReset}>
-                Make Another Application
-            </button>
+            {/* ACTION PLAN (DiCE Counterfactuals) */}
+            {!isApproved && result.action_plan && result.action_plan.length > 0 && (
+                <div style={{ 
+                    background: 'rgba(16, 185, 129, 0.1)', 
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    padding: '1.5rem', 
+                    borderRadius: '16px', 
+                    marginBottom: '2rem',
+                    textAlign: 'left'
+                }}>
+                    <h3 style={{ color: '#86efac', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <i className="ri-route-line"></i> Path to Approval
+                    </h3>
+                    <p style={{ color: 'var(--secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                        Our AI found alternative scenarios where your loan would be approved:
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {result.action_plan.map((planGroup, index) => (
+                            <div key={index} style={{ 
+                                background: 'rgba(0,0,0,0.3)', 
+                                padding: '1rem', 
+                                borderRadius: '8px' 
+                            }}>
+                                <strong style={{ color: '#fff', fontSize: '0.85rem', textTransform: 'uppercase' }}>Option {index + 1}:</strong>
+                                <ul style={{ color: '#e2e8f0', marginTop: '0.5rem', paddingLeft: '1.5rem', fontSize: '0.95rem' }}>
+                                    {planGroup.map((step, i) => (
+                                        <li key={i} style={{ marginBottom: '0.3rem' }}>{step}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <div style={{ textAlign: 'center' }}>
+                <button className="primary-btn" onClick={onReset}>
+                    Assess Another Applicant <i className="ri-refresh-line" style={{ marginLeft: '8px' }}></i>
+                </button>
+            </div>
         </div>
     );
 };
 
 const App = () => {
-    // Initial State corresponding to LoanApplication model
     const initialForm = {
-        Gender: 'Male',
-        Married: 'No',
-        Dependents: '0',
-        Education: 'Graduate',
-        Self_Employed: 'No',
-        ApplicantIncome: 5000,
-        CoapplicantIncome: 0,
-        LoanAmount: 150,
-        Loan_Amount_Term: 360,
-        Credit_History: 1.0,
-        Property_Area: 'Urban'
+        person_age: 25,
+        person_gender: 'male',
+        person_education: 'Bachelor',
+        person_income: 55000,
+        person_emp_exp: 2,
+        person_home_ownership: 'RENT',
+        loan_amnt: 10000,
+        loan_intent: 'PERSONAL',
+        loan_int_rate: 11.5,
+        cb_person_cred_hist_length: 3,
+        credit_score: 650,
+        previous_loan_defaults_on_file: 'No'
     };
 
     const [formData, setFormData] = useState(initialForm);
@@ -162,14 +236,20 @@ const App = () => {
         setLoading(true);
         setError(null);
         try {
-            // Transform numeric inputs
+            const calculatedPercent = formData.person_income > 0 
+                ? (parseFloat(formData.loan_amnt) / parseFloat(formData.person_income)) 
+                : 0;
+
             const payload = {
                 ...formData,
-                ApplicantIncome: parseFloat(formData.ApplicantIncome),
-                CoapplicantIncome: parseFloat(formData.CoapplicantIncome),
-                LoanAmount: parseFloat(formData.LoanAmount),
-                Loan_Amount_Term: parseFloat(formData.Loan_Amount_Term),
-                Credit_History: parseFloat(formData.Credit_History)
+                person_age: parseInt(formData.person_age),
+                person_income: parseFloat(formData.person_income),
+                person_emp_exp: parseInt(formData.person_emp_exp),
+                loan_amnt: parseFloat(formData.loan_amnt),
+                loan_int_rate: parseFloat(formData.loan_int_rate),
+                loan_percent_income: parseFloat(calculatedPercent.toFixed(2)),
+                cb_person_cred_hist_length: parseInt(formData.cb_person_cred_hist_length),
+                credit_score: parseInt(formData.credit_score)
             };
 
             const response = await fetch('http://localhost:8000/predict', {
@@ -180,14 +260,14 @@ const App = () => {
 
             if (!response.ok) {
                 const errData = await response.json();
-                throw new Error(errData.detail || 'Failed to connect to backend');
+                throw new Error(errData.detail || 'Failed to connect');
             }
 
             const data = await response.json();
             setResult(data);
         } catch (err) {
             console.error(err);
-            setError(err.message || "An unexpected error occurred");
+            setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -195,117 +275,78 @@ const App = () => {
 
     return (
         <div className="app-container">
-            {/* Sidebar (Visual only) */}
+            {/* Sidebar matching old CSS */}
             <nav className="sidebar">
                 <div className="logo-icon"><i className="ri-bank-line"></i></div>
                 <div className="nav-item active"><i className="ri-file-text-line"></i></div>
                 <div className="nav-item"><i className="ri-history-line"></i></div>
-
+                <div className="nav-item"><i className="ri-settings-4-line"></i></div>
             </nav>
 
-            <main className="dashboard-main" style={{ margin: '0', width: '100%' }}>
+            <main className="dashboard-main">
                 <header className="dashboard-header">
                     <h1>Loan <strong>Predictor</strong></h1>
-                    <p style={{ color: '#94a3b8' }}>Fill in the details below to check loan eligibility powered by AI.</p>
+                    <p style={{ color: 'var(--secondary)' }}>Fill in the details below to check loan eligibility powered by AI.</p>
                 </header>
 
-                <div className="dashboard-content" style={{ marginTop: '2rem' }}>
+                {error && (
+                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)', padding: '1rem', borderRadius: '8px', color: '#fca5a5', marginBottom: '2rem' }}>
+                        <i className="ri-error-warning-line"></i> {error}
+                    </div>
+                )}
 
-                    {error && (
-                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '1rem', borderRadius: '8px', color: '#fca5a5', marginBottom: '2rem' }}>
-                            <i className="ri-error-warning-line"></i> {error}
-                        </div>
-                    )}
-
-                    {!result ? (
-                        <div className="glass-card" style={{ padding: '2rem' }}>
-                            <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                                Applicant Details
-                            </h2>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                                <InputGroup
-                                    label="Gender"
-                                    value={formData.Gender}
-                                    onChange={v => updateField('Gender', v)}
-                                    options={[{ label: 'Male', value: 'Male' }, { label: 'Female', value: 'Female' }]}
-                                />
-                                <InputGroup
-                                    label="Marital Status"
-                                    value={formData.Married}
-                                    onChange={v => updateField('Married', v)}
-                                    options={[{ label: 'Single/No', value: 'No' }, { label: 'Married', value: 'Yes' }]}
-                                />
-                                <InputGroup
-                                    label="Dependents"
-                                    value={formData.Dependents}
-                                    onChange={v => updateField('Dependents', v)}
-                                    options={[
-                                        { label: '0', value: '0' },
-                                        { label: '1', value: '1' },
-                                        { label: '2', value: '2' },
-                                        { label: '3+', value: '3+' }
-                                    ]}
-                                />
-                                <InputGroup
-                                    label="Education"
-                                    value={formData.Education}
-                                    onChange={v => updateField('Education', v)}
-                                    options={[{ label: 'Graduate', value: 'Graduate' }, { label: 'Not Graduate', value: 'Not Graduate' }]}
-                                />
-                                <InputGroup
-                                    label="Self Employed"
-                                    value={formData.Self_Employed}
-                                    onChange={v => updateField('Self_Employed', v)}
-                                    options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]}
-                                />
+                {!result ? (
+                    <div className="glass-card fade-in">
+                        <h2 className="card-title" style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+                            <i className="ri-user-line"></i> Applicant Details
+                        </h2>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0 1.5rem' }}>
+                            {/* Personal Info */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <h3 style={{ color: 'var(--secondary)', fontSize: '0.8rem', marginBottom: '1rem', textTransform: 'uppercase' }}>Personal</h3>
+                                <InputGroup label="Age" type="number" value={formData.person_age} onChange={v => updateField('person_age', v)} />
+                                <InputGroup label="Gender" value={formData.person_gender} onChange={v => updateField('person_gender', v)} options={[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }]} />
+                                <InputGroup label="Education" value={formData.person_education} onChange={v => updateField('person_education', v)} options={[{ label: 'High School', value: 'High School' }, { label: 'Associate', value: 'Associate' }, { label: 'Bachelor', value: 'Bachelor' }, { label: 'Master', value: 'Master' }, { label: 'Doctorate', value: 'Doctorate' }]} />
+                                <InputGroup label="Home Ownership" value={formData.person_home_ownership} onChange={v => updateField('person_home_ownership', v)} options={[{ label: 'Rent', value: 'RENT' }, { label: 'Own', value: 'OWN' }, { label: 'Mortgage', value: 'MORTGAGE' }, { label: 'Other', value: 'OTHER' }]} />
                             </div>
 
-                            <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', marginTop: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                                Financial Details
-                            </h2>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                                <InputGroup label="Applicant Income" type="number" prefix="$" value={formData.ApplicantIncome} onChange={v => updateField('ApplicantIncome', v)} />
-                                <InputGroup label="Co-Applicant Income" type="number" prefix="$" value={formData.CoapplicantIncome} onChange={v => updateField('CoapplicantIncome', v)} />
-                                <InputGroup label="Loan Amount" type="number" prefix="$" value={formData.LoanAmount} onChange={v => updateField('LoanAmount', v)} />
-                                <InputGroup label="Loan Term (Days)" type="number" value={formData.Loan_Amount_Term} onChange={v => updateField('Loan_Amount_Term', v)} />
-                                <InputGroup
-                                    label="Credit History"
-                                    value={formData.Credit_History}
-                                    onChange={v => updateField('Credit_History', v)}
-                                    options={[{ label: 'Good (1.0)', value: 1.0 }, { label: 'Bad (0.0)', value: 0.0 }]}
-                                />
-                                <InputGroup
-                                    label="Property Area"
-                                    value={formData.Property_Area}
-                                    onChange={v => updateField('Property_Area', v)}
-                                    options={[
-                                        { label: 'Urban', value: 'Urban' },
-                                        { label: 'Semiurban', value: 'Semiurban' },
-                                        { label: 'Rural', value: 'Rural' }
-                                    ]}
-                                />
+                            {/* Financial Info */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <h3 style={{ color: 'var(--secondary)', fontSize: '0.8rem', marginBottom: '1rem', textTransform: 'uppercase' }}>Financial</h3>
+                                <InputGroup label="Annual Income ($)" type="number" value={formData.person_income} onChange={v => updateField('person_income', v)} />
+                                <InputGroup label="Employment Exp (Years)" type="number" value={formData.person_emp_exp} onChange={v => updateField('person_emp_exp', v)} />
+                                <InputGroup label="Loan Amount ($)" type="number" value={formData.loan_amnt} onChange={v => updateField('loan_amnt', v)} />
+                                <InputGroup label="Intent" value={formData.loan_intent} onChange={v => updateField('loan_intent', v)} options={[{ label: 'Personal', value: 'PERSONAL' }, { label: 'Education', value: 'EDUCATION' }, { label: 'Medical', value: 'MEDICAL' }, { label: 'Venture', value: 'VENTURE' }, { label: 'Home Improvement', value: 'HOMEIMPROVEMENT' }, { label: 'Debt Consolidation', value: 'DEBTCONSOLIDATION' }]} />
                             </div>
 
-                            <div style={{ marginTop: '3rem', textAlign: 'right' }}>
-                                <button className="primary-btn" onClick={handleSubmit} disabled={loading}>
-                                    {loading ? (
-                                        <span><i className="ri-loader-4-line ri-spin"></i> Analyzing...</span>
-                                    ) : (
-                                        <span>Predict Status <i className="ri-arrow-right-line"></i></span>
-                                    )}
-                                </button>
+                            {/* Credit Info */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <h3 style={{ color: 'var(--secondary)', fontSize: '0.8rem', marginBottom: '1rem', textTransform: 'uppercase' }}>Credit Profile</h3>
+                                <InputGroup label="Interest Rate (%)" type="number" value={formData.loan_int_rate} onChange={v => updateField('loan_int_rate', v)} />
+                                <InputGroup label="Credit Score" type="number" value={formData.credit_score} onChange={v => updateField('credit_score', v)} />
+                                <InputGroup label="Credit History (Years)" type="number" value={formData.cb_person_cred_hist_length} onChange={v => updateField('cb_person_cred_hist_length', v)} />
+                                <InputGroup label="Prior Defaults" value={formData.previous_loan_defaults_on_file} onChange={v => updateField('previous_loan_defaults_on_file', v)} options={[{ label: 'No', value: 'No' }, { label: 'Yes', value: 'Yes' }]} />
                             </div>
                         </div>
-                    ) : (
-                        <ResultCard result={result} onReset={() => setResult(null)} />
-                    )}
-                </div>
+
+                        <div style={{ textAlign: 'right', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)' }}>
+                            <button className="primary-btn" onClick={handleSubmit} disabled={loading}>
+                                {loading ? (
+                                    <><i className="ri-loader-4-line ri-spin"></i> Analyzing...</>
+                                ) : (
+                                    <>Predict Status <i className="ri-arrow-right-line"></i></>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <ResultCard result={result} onReset={() => setResult(null)} />
+                )}
             </main>
         </div>
     );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
 root.render(<App />);
