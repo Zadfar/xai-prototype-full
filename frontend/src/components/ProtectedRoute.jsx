@@ -21,7 +21,20 @@ const ProtectedRoute = ({ children }) => {
         return () => subscription.unsubscribe();
     }, []);
 
-    if (loading) return <div style={{ textAlign: 'center', padding: '3rem' }}>Loading secure portal...</div>;
+    if (loading) return (
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100vh',
+            gap: '1rem',
+            background: 'var(--bg-app)'
+        }}>
+            <div className="spinner"></div>
+            <div style={{ color: 'var(--secondary)', fontSize: '0.9rem' }}>Verifying authorization...</div>
+        </div>
+    );
 
     // If no user is logged in, send them back to the login page
     if (!session) {

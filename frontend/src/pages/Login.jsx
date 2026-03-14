@@ -73,9 +73,9 @@ const Login = () => {
                         </div>
                         
                         <div className="login-footer-actions">
-                            <button type="submit" className="primary-btn login-btn" disabled={loading}>
+                            <button type="submit" className="primary-btn login-btn" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                 {loading ? (
-                                    <><i className="ri-loader-4-line ri-spin"></i> Authenticating...</>
+                                    <><div className="spinner"></div> Authenticating...</>
                                 ) : (
                                     <>Sign In to Dashboard <i className="ri-login-box-line"></i></>
                                 )}

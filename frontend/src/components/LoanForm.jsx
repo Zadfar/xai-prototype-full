@@ -78,9 +78,9 @@ const LoanForm = ({ onSubmit, loading, error }) => {
                 </div>
 
                 <div style={{ textAlign: 'right', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)' }}>
-                    <button type="submit" className="primary-btn" disabled={loading}>
+                    <button type="submit" className="primary-btn" disabled={loading} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                         {loading ? (
-                            <><i className="ri-loader-4-line ri-spin"></i> Analyzing...</>
+                            <><div className="spinner"></div> Analyzing...</>
                         ) : (
                             <>Predict Status <i className="ri-arrow-right-line"></i></>
                         )}

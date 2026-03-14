@@ -152,20 +152,20 @@ const ReviewModal = ({ application, onClose, onSuccess }) => {
                         <button 
                             disabled={loading}
                             onClick={() => handleDecision("Rejected")}
-                            style={{ padding: '0.75rem 1.5rem', background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: '0.3s' }}
+                            style={{ padding: '0.75rem 1.5rem', background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: '0.3s', display: 'flex', alignItems: 'center', gap: '8px' }}
                             onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'}
                             onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
                         >
-                            {loading ? 'Processing...' : 'Reject Application'}
+                            {loading ? <><div className="spinner spinner-sm" style={{ borderTopColor: '#fca5a5' }}></div> Processing...</> : 'Reject Application'}
                         </button>
                         <button 
                             disabled={loading}
                             onClick={() => handleDecision("Approved")}
-                            style={{ padding: '0.75rem 1.5rem', background: 'rgba(16, 185, 129, 0.15)', color: '#86efac', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: '0.3s' }}
+                            style={{ padding: '0.75rem 1.5rem', background: 'rgba(16, 185, 129, 0.15)', color: '#86efac', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: '0.3s', display: 'flex', alignItems: 'center', gap: '8px' }}
                             onMouseOver={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)'}
                             onMouseOut={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)'}
                         >
-                            {loading ? 'Processing...' : 'Approve Application'}
+                            {loading ? <><div className="spinner spinner-sm" style={{ borderTopColor: '#86efac' }}></div> Processing...</> : 'Approve Application'}
                         </button>
                     </div>
                 </div>

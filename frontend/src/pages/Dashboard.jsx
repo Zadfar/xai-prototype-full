@@ -69,8 +69,18 @@ const Dashboard = () => {
     }, []);
 
     if (loading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-            <i className="ri-loader-4-line ri-spin ri-3x" style={{ color: 'var(--primary)' }}></i>
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '80vh',
+            gap: '1.5rem'
+        }}>
+            <div className="spinner-large spinner"></div>
+            <div style={{ color: 'var(--secondary)', fontSize: '1.1rem', fontWeight: '500', letterSpacing: '0.5px' }}>
+                Loading Officer Dashboard...
+            </div>
         </div>
     );
 
