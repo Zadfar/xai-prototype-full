@@ -1,9 +1,10 @@
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, case
+from dateutil.relativedelta import relativedelta
 from database import get_db
 from models import Application, AIDecision
 from schemas import OfficerDecision
@@ -92,33 +93,46 @@ def get_funnel_data(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
 
 @router.get("/trend")
 def get_trend_data(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    # Get the last 6 months of data
+    """
+    Aggregates application volume by month for the last 12 months.
+    """
     try:
-        # Since we might have limited data, we'll try to group by month
-        # Using func.date_trunc for Postgres
+        # Get the last 12 months
+        from datetime import date, timedelta
+        from dateutil.relativedelta import relativedelta
+        
+        today = date.today()
+        months = []
+        for i in range(11, -1, -1):
+            d = today - relativedelta(months=i)
+            months.append(d.replace(day=1))
+
         trend_results = db.query(
             func.date_trunc('month', Application.created_at).label('month'),
-            func.count(Application.id).label('count'),
-            func.sum(func.case((AIDecision.final_status == 'Approved', 1), else_=0)).label('approvals'),
-            func.sum(func.case((AIDecision.probability_of_default > 0.6, 1), else_=0)).label('defaults')
+            func.sum(case((AIDecision.final_status == 'Approved', 1), else_=0)).label('approved'),
+            func.sum(case((AIDecision.final_status == 'Rejected', 1), else_=0)).label('rejected')
         ).join(AIDecision, Application.id == AIDecision.application_id)\
-         .group_by('month').order_by('month').limit(12).all()
+         .group_by('month').all()
 
-        if not trend_results:
-            # Fallback if no data yet
-            return [{"month": "No Data", "approvals": 0, "defaults": 0}]
+        # Map results to a dictionary for easy lookup
+        data_map = {r.month.date().replace(day=1): {"approved": int(r.approved or 0), "rejected": int(r.rejected or 0)} for r in trend_results if r.month}
 
-        return [
-            {
-                "month": r.month.strftime("%b"),
-                "approvals": int(r.approvals or 0),
-                "defaults": int(r.defaults or 0)
-            }
-            for r in trend_results
-        ]
+        # Build final response with all 12 months
+        final_data = []
+        for m in months:
+            m_data = data_map.get(m, {"approved": 0, "rejected": 0})
+            final_data.append({
+                "month": m.strftime("%b").lower(),
+                "approved": m_data["approved"],
+                "rejected": m_data["rejected"]
+            })
+
+        return final_data
     except Exception:
-        # If date_trunc fails (e.g. SQLite for testing), fallback to simpler logic
-        return [{"month": "Mock", "approvals": 10, "defaults": 2}]
+        traceback.print_exc()
+        # Fallback with actual month names even on error
+        today = date.today()
+        return [{"month": (today - relativedelta(months=i)).strftime("%b").lower(), "approved": 0, "rejected": 0} for i in range(11, -1, -1)]
 
 @router.get("/product-performance")
 def get_product_performance(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:

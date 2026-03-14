@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    fetchKPIs, fetchQueue, fetchFunnel, fetchTrend, 
+import {
+    fetchKPIs, fetchQueue, fetchFunnel, fetchTrend,
     fetchProductPerformance, fetchRiskSegmentation, fetchDefaultReasons,
-    fetchRiskDistribution, fetchHomeOwnership 
+    fetchRiskDistribution, fetchHomeOwnership
 } from '../services/dashboardApi';
-import { 
-    FunnelChart, TrendChart, ProductPerformance, 
-    RiskSegmentation, DefaultReasons, RiskCreditScatter, HomeOwnershipPie 
+import {
+    FunnelChart, TrendChart, ProductPerformance,
+    RiskSegmentation, DefaultReasons, RiskCreditScatter, HomeOwnershipPie
 } from '../components/dashboard/DashboardCharts';
 import ReviewQueueTable from '../components/dashboard/ReviewQueueTable';
 import ReviewModal from '../components/dashboard/ReviewModal';
@@ -41,7 +41,7 @@ const Dashboard = () => {
         setLoading(true);
         try {
             const [
-                kpiData, queueData, funnel, trend, 
+                kpiData, queueData, funnel, trend,
                 products, risks, reasons, distribution, home
             ] = await Promise.all([
                 fetchKPIs(), fetchQueue(), fetchFunnel(), fetchTrend(),
@@ -82,19 +82,19 @@ const Dashboard = () => {
                     <h1 style={{ margin: 0 }}><strong>Officer</strong> Overview</h1>
                     <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Dashboard &gt; Branch &gt; <span style={{ color: 'var(--primary)' }}>Loan Performance</span></div>
                 </div>
-                
+
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <div className="glass-card" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                         <i className="ri-calendar-line"></i> Oct 1, 2025 - Oct 31, 2025
                     </div>
-                    <button 
+                    <button
                         onClick={handleLogout}
-                        style={{ 
-                            background: 'rgba(239, 68, 68, 0.1)', 
-                            border: '1px solid rgba(239, 68, 68, 0.3)', 
-                            color: '#fca5a5', 
-                            padding: '0.6rem 1.2rem', 
-                            borderRadius: '8px', 
+                        style={{
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            color: '#fca5a5',
+                            padding: '0.6rem 1.2rem',
+                            borderRadius: '8px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -108,7 +108,7 @@ const Dashboard = () => {
                     </button>
                 </div>
             </div>
-            
+
             {/* TOP KPI ROW */}
             {kpis && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.2rem', marginBottom: '2rem' }}>
@@ -122,8 +122,8 @@ const Dashboard = () => {
 
             {/* STRATEGIC INSIGHTS ROW */}
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                 {/* RISK VS CREDIT SCORE ANALYSIS */}
-                 <div className="glass-card" style={{ padding: '1.5rem' }}>
+                {/* RISK VS CREDIT SCORE ANALYSIS */}
+                <div className="glass-card" style={{ padding: '1.5rem' }}>
                     <div className="card-title"><i className="ri-bubble-chart-line"></i> Risk vs Credit Score Distribution</div>
                     <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Full portfolio layout mapping credit score to default probability</div>
                     <RiskCreditScatter data={distributionData} />
@@ -141,7 +141,7 @@ const Dashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
                     <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span><i className="ri-line-chart-line"></i> Approvals vs Defaults Trend</span>
+                        <span><i className="ri-line-chart-line"></i> Approved vs Rejected Trend</span>
                         <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>12 Month Period</span>
                     </div>
                     <TrendChart data={trendData} />
@@ -197,21 +197,21 @@ const Dashboard = () => {
                     <i className="ri-list-check-2"></i> Manual Review Queue
                 </div>
                 <div style={{ padding: '1.5rem' }}>
-                    <ReviewQueueTable 
-                        queue={queue} 
-                        onReviewClick={(app) => setSelectedApp(app)} 
+                    <ReviewQueueTable
+                        queue={queue}
+                        onReviewClick={(app) => setSelectedApp(app)}
                     />
                 </div>
             </div>
 
             {/* DECISION MODAL */}
             {selectedApp && (
-                <ReviewModal 
-                    application={selectedApp} 
+                <ReviewModal
+                    application={selectedApp}
                     onClose={() => setSelectedApp(null)}
                     onSuccess={() => {
                         setSelectedApp(null);
-                        loadDashboardData(); 
+                        loadDashboardData();
                     }}
                 />
             )}
