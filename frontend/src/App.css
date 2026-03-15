@@ -7,7 +7,8 @@
 
 .main-content {
     flex: 1;
-    margin-top: 70px; /* Space for navbar */
+    margin-top: 70px;
+    /* Space for navbar */
     padding: 2rem 1.5rem;
     width: 100%;
     max-width: 1400px;
@@ -95,7 +96,7 @@
 
 /* This targets the currently selected option in some browsers */
 .glass-input option:checked {
-    background-color: #f0f0f0; 
+    background-color: #f0f0f0;
 }
 
 .primary-btn {

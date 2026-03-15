@@ -72,7 +72,7 @@ export const TrendChart = ({ data }) => {
             No trend data available for this period.
         </div>
     );
-    
+
     // Aggressive safety: filter out anything containing 'mock' and force lowercase
     const displayData = data
         .filter(d => d && d.month && typeof d.month === 'string')
@@ -88,28 +88,28 @@ export const TrendChart = ({ data }) => {
                 <BarChart data={displayData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
                     <defs>
                         <linearGradient id="barGradientApproved" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/>
-                            <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
+                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#059669" stopOpacity={1} />
                         </linearGradient>
                         <linearGradient id="barGradientRejected" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9}/>
-                            <stop offset="100%" stopColor="#dc2626" stopOpacity={1}/>
+                            <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#dc2626" stopOpacity={1} />
                         </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                    <XAxis 
-                        dataKey="month" 
-                        stroke="#94a3b8" 
-                        fontSize={10} 
-                        tickLine={false} 
-                        axisLine={false} 
+                    <XAxis
+                        dataKey="month"
+                        stroke="#94a3b8"
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
                         dy={15}
                         interval={0}
                     />
-                    <YAxis 
-                        stroke="#94a3b8" 
-                        fontSize={10} 
-                        tickLine={false} 
+                    <YAxis
+                        stroke="#94a3b8"
+                        fontSize={10}
+                        tickLine={false}
                         axisLine={false}
                         domain={[0, 'auto']}
                         allowDecimals={false}
@@ -117,37 +117,37 @@ export const TrendChart = ({ data }) => {
                     />
                     <Tooltip
                         cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                        contentStyle={{ 
-                            background: 'rgba(15, 23, 42, 0.95)', 
-                            border: '1px solid rgba(255,255,255,0.1)', 
+                        contentStyle={{
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            border: '1px solid rgba(255,255,255,0.1)',
                             borderRadius: '12px',
                             backdropFilter: 'blur(12px)',
                             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
                         }}
                         itemStyle={{ fontSize: '12px', padding: '2px 0' }}
                     />
-                    <Legend 
-                        verticalAlign="top" 
-                        align="right" 
-                        iconType="circle" 
+                    <Legend
+                        verticalAlign="top"
+                        align="right"
+                        iconType="circle"
                         iconSize={8}
-                        wrapperStyle={{ paddingBottom: '25px', fontSize: '11px', color: '#94a3b8' }} 
+                        wrapperStyle={{ paddingBottom: '25px', fontSize: '11px', color: '#94a3b8' }}
                     />
-                    <Bar 
-                        dataKey="approved" 
-                        name="Approved" 
-                        fill="url(#barGradientApproved)" 
-                        radius={[4, 4, 0, 0]} 
-                        barSize={12} 
+                    <Bar
+                        dataKey="approved"
+                        name="Approved"
+                        fill="url(#barGradientApproved)"
+                        radius={[4, 4, 0, 0]}
+                        barSize={12}
                     >
                         <LabelList dataKey="approved" position="top" style={{ fill: '#94a3b8', fontSize: '9px' }} />
                     </Bar>
-                    <Bar 
-                        dataKey="rejected" 
-                        name="Rejected" 
-                        fill="url(#barGradientRejected)" 
-                        radius={[4, 4, 0, 0]} 
-                        barSize={12} 
+                    <Bar
+                        dataKey="rejected"
+                        name="Rejected"
+                        fill="url(#barGradientRejected)"
+                        radius={[4, 4, 0, 0]}
+                        barSize={12}
                     >
                         <LabelList dataKey="rejected" position="top" style={{ fill: '#94a3b8', fontSize: '9px' }} />
                     </Bar>

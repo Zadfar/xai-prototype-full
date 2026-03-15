@@ -15,6 +15,8 @@ router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 def get_dashboard_kpis(db: Session = Depends(get_db)) -> Dict[str, Any]:
     """
     Aggregates high-level metrics for the loan officer dashboard.
+    [COMM-7] CRITICAL ALERTS: Dynamically generated based on current portfolio health 
+    (NPA levels, high-risk detection, and review backlog).
     """
     try:
         total_applications = db.query(Application).count()
@@ -73,28 +75,12 @@ def get_dashboard_kpis(db: Session = Depends(get_db)) -> Dict[str, Any]:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to aggregate KPIs")
 
-@router.get("/funnel")
-def get_funnel_data(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
-    total = db.query(Application).count()
-    approved = db.query(AIDecision).filter(AIDecision.final_status == "Approved").count()
-    
-    # Use probability of default > 50% as "High Risk/Potential Default"
-    high_risk = db.query(AIDecision).filter(AIDecision.probability_of_default > 0.5).count()
-    
-    # We'll estimate "Disbursed" as 90% of approved if not explicit
-    disbursed = int(approved * 0.9)
-
-    return [
-        {"name": "Applications", "value": int(total), "fill": "#1e3a8a"},
-        {"name": "Approvals", "value": int(approved), "fill": "#3b82f6"},
-        {"name": "Disbursed", "value": int(disbursed), "fill": "#60a5fa"},
-        {"name": "Risk Alerts", "value": int(high_risk), "fill": "#ef4444"}
-    ]
 
 @router.get("/trend")
 def get_trend_data(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """
-    Aggregates application volume by month for the last 12 months.
+    [COMM-3] APPROVED VS REJECTED TREND: Aggregates application volume by month 
+    for the last 12 months, showing monthly approval/rejection counts.
     """
     try:
         # Get the last 12 months
@@ -136,6 +122,10 @@ def get_trend_data(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
 
 @router.get("/product-performance")
 def get_product_performance(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
+    """
+    [COMM-4] PRODUCT PERFORMANCE: Calculates the distribution of loan intents 
+    (e.g., Personal, Education) as a percentage of total applications.
+    """
     results = db.query(Application.loan_intent, func.count(Application.id)).group_by(Application.loan_intent).all()
     total = sum(count for _, count in results) or 1
     
@@ -152,6 +142,10 @@ def get_product_performance(db: Session = Depends(get_db)) -> List[Dict[str, Any
 
 @router.get("/risk-segmentation")
 def get_risk_segmentation(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
+    """
+    [COMM-2] RISK SEGMENTATION: Groups applications into Low, Medium, and High 
+    risk buckets based on AI-calculated probability of default.
+    """
     # Low < 20%, Medium 20-60%, High > 60%
     low = db.query(AIDecision).filter(AIDecision.probability_of_default < 0.2).count()
     med = db.query(AIDecision).filter(AIDecision.probability_of_default >= 0.2, AIDecision.probability_of_default <= 0.6).count()
@@ -167,7 +161,8 @@ def get_risk_segmentation(db: Session = Depends(get_db)) -> List[Dict[str, Any]]
 @router.get("/default-reasons")
 def get_default_reasons(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """
-    Dynamically extracts the top reasons for default risk from AI explanations in the database.
+    [COMM-6] TOP DEFAULT REASONS: Parses AI-generated explainability data (SHAP) 
+     to identify the most frequent features contributing to high risk.
     """
     try:
         # Fetch SHAP explanations for all high-risk or rejected applications
@@ -209,7 +204,8 @@ def get_default_reasons(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
 @router.get("/home-ownership")
 def get_home_ownership_stats(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """
-    Returns distribution of applicants by home ownership status.
+    [COMM-5] HOME OWNERSHIP: Breaks down the applicant pool by residency status 
+    (Rent, Own, Mortgage) to show portfolio demographic distribution.
     """
     try:
         results = db.query(Application.person_home_ownership, func.count(Application.id))\
@@ -233,7 +229,8 @@ def get_home_ownership_stats(db: Session = Depends(get_db)) -> List[Dict[str, An
 @router.get("/risk-distribution")
 def get_risk_distribution(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """
-    Returns data points for a Credit Score vs Risk Probability scatter plot.
+    [COMM-1] RISK VS CREDIT SCORE DISTRIBUTION: Provides coordinates (X: Credit Score, 
+    Y: Risk Prob) for every application to map the risk landscape.
     """
     try:
         data_points = db.query(

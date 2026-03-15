@@ -27,11 +27,6 @@ export const submitDecision = async (applicationId, decisionData) => {
     return response.json();
 };
 
-export const fetchFunnel = async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/funnel`);
-    if (!response.ok) throw new Error('Failed to fetch funnel data');
-    return response.json();
-};
 
 export const fetchTrend = async () => {
     const response = await fetch(`${BASE_URL}/api/dashboard/trend`);

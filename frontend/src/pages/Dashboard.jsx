@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-    fetchKPIs, fetchQueue, fetchFunnel, fetchTrend,
+    fetchKPIs, fetchQueue, fetchTrend,
     fetchProductPerformance, fetchRiskSegmentation, fetchDefaultReasons,
     fetchRiskDistribution, fetchHomeOwnership
 } from '../services/dashboardApi';
 import {
-    FunnelChart, TrendChart, ProductPerformance,
+    TrendChart, ProductPerformance,
     RiskSegmentation, DefaultReasons, RiskCreditScatter, HomeOwnershipPie
 } from '../components/dashboard/DashboardCharts';
 import ReviewQueueTable from '../components/dashboard/ReviewQueueTable';
@@ -16,7 +16,6 @@ import { supabase } from '../supabaseClient';
 const Dashboard = () => {
     const [kpis, setKpis] = useState(null);
     const [queue, setQueue] = useState([]);
-    const [funnelData, setFunnelData] = useState([]);
     const [trendData, setTrendData] = useState([]);
     const [productData, setProductData] = useState([]);
     const [riskData, setRiskData] = useState([]);
@@ -41,16 +40,15 @@ const Dashboard = () => {
         setLoading(true);
         try {
             const [
-                kpiData, queueData, funnel, trend,
+                kpiData, queueData, trend,
                 products, risks, reasons, distribution, home
             ] = await Promise.all([
-                fetchKPIs(), fetchQueue(), fetchFunnel(), fetchTrend(),
+                fetchKPIs(), fetchQueue(), fetchTrend(),
                 fetchProductPerformance(), fetchRiskSegmentation(), fetchDefaultReasons(),
                 fetchRiskDistribution(), fetchHomeOwnership()
             ]);
             setKpis(kpiData);
             setQueue(queueData);
-            setFunnelData(funnel);
             setTrendData(trend);
             setProductData(products);
             setRiskData(risks);
@@ -131,65 +129,66 @@ const Dashboard = () => {
             )}
 
             {/* STRATEGIC INSIGHTS ROW */}
+            {/* RISK & SEGMENTATION ROW */}
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                {/* RISK VS CREDIT SCORE ANALYSIS */}
+                {/* [UI-1] RISK VS CREDIT SCORE DISTRIBUTION: Renders a scatter plot mapping credit scores against default probability. */}
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
                     <div className="card-title"><i className="ri-bubble-chart-line"></i> Risk vs Credit Score Distribution</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Full portfolio layout mapping credit score to default probability</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Portfolio mapping: Credit score vs default probability</div>
                     <RiskCreditScatter data={distributionData} />
                 </div>
 
-                {/* FUNNEL */}
+                {/* [UI-2] RISK SEGMENTATION: Visualization of portfolio risk buckets (Low, Med, High). */}
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <div className="card-title"><i className="ri-filter-line"></i> Loan Conversion Funnel</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Application through Default stages</div>
-                    <FunnelChart data={funnelData} />
+                    <div className="card-title"><i className="ri-donut-chart-line"></i> Risk Segmentation</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Portfolio breakdown by risk category</div>
+                    <div style={{ marginTop: '2rem' }}>
+                        <RiskSegmentation data={riskData} />
+                    </div>
                 </div>
             </div>
 
-            {/* CHARTS GRID SECTION */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            {/* TREND & PERFORMANCE ROW */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                {/* [UI-3] APPROVED VS REJECTED TREND: Timeline chart showing monthly application decision outcomes. */}
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
                     <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span><i className="ri-line-chart-line"></i> Approved vs Rejected Trend</span>
-                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>12 Month Period</span>
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>12 Month History</span>
                     </div>
                     <TrendChart data={trendData} />
                 </div>
 
+                {/* [UI-4] PRODUCT PERFORMANCE: Chart showing the distribution of loan intents. */}
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <div className="card-title"><i className="ri-home-4-line"></i> Home Ownership Profile</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Demographic security breakdown</div>
-                    <HomeOwnershipPie data={homeData} />
+                    <div className="card-title"><i className="ri-bar-chart-box-line"></i> Product Performance</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Approval volume by loan purpose</div>
+                    <ProductPerformance data={productData} />
                 </div>
             </div>
 
-            {/* THREE COLUMN GRID */}
+            {/* DRILL-DOWN GRID */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                {/* PRODUCT PERFORMANCE */}
+                {/* [UI-5] HOME OWNERSHIP: Demographic breakdown based on housing status. */}
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <div className="card-title"><i className="ri-bar-chart-box-line"></i> Product Performance</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Approval volume by loan type</div>
-                    <ProductPerformance data={productData} />
+                    <div className="card-title"><i className="ri-home-4-line"></i> Home Ownership</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>Applicant demographic profile</div>
+                    <HomeOwnershipPie data={homeData} />
                 </div>
 
-                {/* DEFAULT REASONS */}
+                {/* [UI-6] TOP DEFAULT REASONS: AI insights into the primary factors causing application rejections. */}
                 <div className="glass-card" style={{ padding: '1.5rem' }}>
-                    <div className="card-title"><i className="ri-list-alert-line"></i> Default Reasons (AI)</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Top factors derived from SHAP</div>
+                    <div className="card-title"><i className="ri-list-alert-line"></i> Top Default Reasons</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>AI-derived risk factors</div>
                     <DefaultReasons data={reasonData} />
                 </div>
 
-                {/* RISK SEGMENTATION & ALERTS */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div className="glass-card" style={{ padding: '1.5rem', flex: 1 }}>
-                        <div className="card-title"><i className="ri-donut-chart-line"></i> Risk Segmentation</div>
-                        <RiskSegmentation data={riskData} />
+                {/* [UI-7] CRITICAL ALERTS: Notification panel for system-flagged portfolio risks. */}
+                <div className="glass-card" style={{ padding: '1.5rem', borderLeft: '4px solid #f97316' }}>
+                    <div style={{ color: '#f97316', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                        <i className="ri-notification-3-line"></i> Critical Alerts
                     </div>
-                    <div className="glass-card" style={{ padding: '1.2rem', borderLeft: '4px solid #f97316' }}>
-                        <div style={{ color: '#f97316', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            <i className="ri-notification-3-line"></i> Critical Alerts
-                        </div>
+                    <div style={{ marginTop: '0.5rem' }}>
                         {kpis && kpis.alerts && kpis.alerts.length > 0 ? (
                             kpis.alerts.map((alert, idx) => (
                                 <AlertItem key={idx} icon={alert.icon} text={alert.text} />
