@@ -15,7 +15,7 @@ const Login = () => {
         setError(null);
 
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        
+
         if (error) {
             setError(error.message);
             setLoading(false);
@@ -35,7 +35,7 @@ const Login = () => {
                         <h2>Officer <strong>Portal</strong></h2>
                         <p>Authorized access only. Please sign in with your bank credentials.</p>
                     </div>
-                    
+
                     {error && (
                         <div className="error-message">
                             <i className="ri-error-warning-line"></i> {error}
@@ -47,11 +47,11 @@ const Login = () => {
                             <label className="section-title">Bank Email</label>
                             <div className="input-with-icon">
                                 <i className="ri-mail-line"></i>
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     className="glass-input"
                                     placeholder="officer@zadfar-bank.com"
-                                    value={email} 
+                                    value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
@@ -61,17 +61,17 @@ const Login = () => {
                             <label className="section-title">Password</label>
                             <div className="input-with-icon">
                                 <i className="ri-lock-2-line"></i>
-                                <input 
-                                    type="password" 
+                                <input
+                                    type="password"
                                     className="glass-input"
                                     placeholder="••••••••"
-                                    value={password} 
+                                    value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="login-footer-actions">
                             <button type="submit" className="primary-btn login-btn" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                 {loading ? (
@@ -91,4 +91,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Login;

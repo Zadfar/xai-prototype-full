@@ -66,21 +66,7 @@ const Dashboard = () => {
         loadDashboardData();
     }, []);
 
-    if (loading) return (
-        <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '80vh',
-            gap: '1.5rem'
-        }}>
-            <div className="spinner-large spinner"></div>
-            <div style={{ color: 'var(--secondary)', fontSize: '1.1rem', fontWeight: '500', letterSpacing: '0.5px' }}>
-                Loading Officer Dashboard...
-            </div>
-        </div>
-    );
+    if (loading) return <DashboardSkeleton />;
 
     return (
         <div className="fade-in" style={{ paddingBottom: '3rem' }}>
@@ -92,26 +78,7 @@ const Dashboard = () => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div className="glass-card" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                        <i className="ri-calendar-line"></i> Oct 1, 2025 - Oct 31, 2025
-                    </div>
-                    <button
-                        onClick={handleLogout}
-                        style={{
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                            color: '#fca5a5',
-                            padding: '0.6rem 1.2rem',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            transition: 'all 0.3s ease'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
-                        onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
-                    >
+                    <button onClick={handleLogout} className="logout-btn">
                         <i className="ri-logout-box-r-line"></i> Sign Out
                     </button>
                 </div>
@@ -248,5 +215,87 @@ const AlertItem = ({ icon, text }) => (
         <span>{text}</span>
     </div>
 );
+
+const DashboardSkeleton = () => (
+    <div className="fade-in" style={{ paddingBottom: '3rem' }}>
+        {/* HEADER SKELETON */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div>
+                <div className="skeleton" style={{ width: '250px', height: '2.5rem', marginBottom: '0.5rem' }}></div>
+                <div className="skeleton" style={{ width: '180px', height: '1rem' }}></div>
+            </div>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="skeleton" style={{ width: '120px', height: '2.5rem' }}></div>
+            </div>
+        </div>
+
+        {/* KPI CARDS SKELETON */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.2rem', marginBottom: '2rem' }}>
+            {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="skeleton-card" style={{ height: '120px' }}>
+                    <div className="skeleton" style={{ width: '60%', height: '1rem', marginBottom: '1rem' }}></div>
+                    <div className="skeleton" style={{ width: '80%', height: '2rem', marginBottom: '0.5rem' }}></div>
+                    <div className="skeleton" style={{ width: '40%', height: '0.8rem' }}></div>
+                </div>
+            ))}
+        </div>
+
+        {/* CHARTS SKELETON ROW 1 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="skeleton-card" style={{ height: '400px' }}>
+                <div className="skeleton" style={{ width: '40%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+                <div className="skeleton" style={{ width: '100%', height: '300px' }}></div>
+            </div>
+            <div className="skeleton-card" style={{ height: '400px' }}>
+                <div className="skeleton" style={{ width: '40%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+                <div className="skeleton" style={{ width: '100%', height: '300px' }}></div>
+            </div>
+        </div>
+
+        {/* CHARTS SKELETON ROW 2 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="skeleton-card" style={{ height: '400px' }}>
+                <div className="skeleton" style={{ width: '40%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+                <div className="skeleton" style={{ width: '100%', height: '300px' }}></div>
+            </div>
+            <div className="skeleton-card" style={{ height: '400px' }}>
+                <div className="skeleton" style={{ width: '40%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+                <div className="skeleton" style={{ width: '100%', height: '300px' }}></div>
+            </div>
+        </div>
+
+        {/* DRILL-DOWN GRID SKELETON */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="skeleton-card" style={{ height: '350px' }}>
+                <div className="skeleton" style={{ width: '50%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+                <div className="skeleton" style={{ width: '100%', height: '250px' }}></div>
+            </div>
+            <div className="skeleton-card" style={{ height: '350px' }}>
+                <div className="skeleton" style={{ width: '50%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+                <div className="skeleton" style={{ width: '100%', height: '250px' }}></div>
+            </div>
+            <div className="skeleton-card" style={{ height: '350px', borderLeft: '4px solid rgba(249, 115, 22, 0.2)' }}>
+                <div className="skeleton" style={{ width: '50%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="skeleton" style={{ width: '100%', height: '1rem' }}></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        {/* TABLE SKELETON */}
+
+        <div className="skeleton-card" style={{ height: '300px' }}>
+            <div className="skeleton" style={{ width: '30%', height: '1.5rem', marginBottom: '1.5rem' }}></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="skeleton" style={{ width: '100%', height: '2.5rem' }}></div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
 
 export default Dashboard;
